@@ -1033,7 +1033,7 @@ enderio.darksteel.upgrade.step_assist.tooltip.detailed.line1=Allows you to walk 
 enderio.darksteel.upgrade.step_assist.enabled=Step Assist Active
 enderio.darksteel.upgrade.step_assist.disabled=Step Assist Disabled
 
-enderio.gui.step_assis_unavailable=Step Assist may be disabled by another mod
+enderio.gui.step_assis_unavailable=Step Assist may be disabled by another mod (%s)
 
 enderio.darksteel.upgrade.jump_two.name=Jump II
 enderio.darksteel.upgrade.jump_two.tooltip.detailed.line1=Increases step and jump height

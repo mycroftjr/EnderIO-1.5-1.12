@@ -140,10 +140,11 @@ public class DarkSteelController {
   private static void updateStepHeight(EntityPlayer player) {
     if (!player.isSneaking() && StepAssistUpgrade.isEquipped(player) && StateController.isActive(player, StepAssistUpgrade.INSTANCE)) {
       if (player.stepHeight < MAGIC_STEP_HEIGHT) {
-        stepHeightWarner++;
-        if (Loader.isModLoaded("clienttweaks") && stepHeightWarner > 20) {
-          player.sendStatusMessage(Lang.GUI_STEP_ASSIST_UNAVAILABLE.toChatServer(), true);
-          stepHeightWarner = -100; // 1 second after switching on but 6 seconds between repeated warnings
+        if (stepHeightWarner > 20) {
+          player.sendStatusMessage(Lang.GUI_STEP_ASSIST_UNAVAILABLE.toChatServer(player.stepHeight), true);
+          // stepHeightWarner = -100; // 1 second after switching on but 6 seconds between repeated warnings
+        } else {
+          stepHeightWarner++;
         }
         player.stepHeight = MAGIC_STEP_HEIGHT;
       } else if (stepHeightWarner > 0) {

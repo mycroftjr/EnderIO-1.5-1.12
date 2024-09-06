@@ -111,7 +111,7 @@ allprojects {
         maven { url = "https://mod-buildcraft.com/maven/" }
         //maven { url = "https://maven.latmod.com" } // FTBLib
         maven { url = "https://maven.covers1624.net/" } // CoFHCore
-        maven { url = "https://cc.crzd.me/maven/" } // ComputerCraft, dead as of 2021-05-24
+        //maven { url = "https://cc.crzd.me/maven/" } // ComputerCraft, dead as of 2021-05-24
         maven { url = "https://www.cursemaven.com" } // Mekanism
         //maven { url = "https://repo.raoulvdberge.com/" } // Refined Storage (new)
         //maven { url = "https://repo.refinedmods.com/" } // Refined Storage (double-plus new)
