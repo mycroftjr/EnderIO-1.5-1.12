@@ -11,18 +11,43 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        //classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath group: "net.minecraftforge.gradle", name: "ForgeGradle", version: "5.1.+"
         classpath "gradle.plugin.net.intellisun:modDependencies:1.0.1-alpha.2" // https://github.com/IntelliSun-MC/modDependencies
-        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.3'
-        classpath "com.vladsch.flexmark:flexmark:0.34.52"
-        classpath "com.vladsch.flexmark:flexmark-pdf-converter:0.34.52"
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.2.0'
+        classpath "com.vladsch.flexmark:flexmark:0.64.6"
+        classpath "com.vladsch.flexmark:flexmark-pdf-converter:0.64.8"
     }
 }
 
 plugins {
-    id 'com.matthewprenger.cursegradle' version "1.1.0"
-    id "com.dorongold.task-tree" version "1.3"
-    id "net.ltgt.apt-eclipse" version "0.18"
+    id 'com.matthewprenger.cursegradle' version "1.4.0"
+    id "com.dorongold.task-tree" version "4.0.0"
+    id "com.diffplug.eclipse.apt" version "4.0.1"
+}
+
+apply plugin: "java"
+apply plugin: "net.minecraftforge.gradle"
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+}
+
+// Configure minecraft pipeline
+minecraft {
+    mappings channel: "${mcp_mappings_channel}", version: "${mcp_mappings_version}"
+
+    runs {
+        "client" {
+            workingDirectory file("./run")
+            mods { "${project.name}" { source sourceSets.main } }
+        }
+
+        "server" {
+            workingDirectory file("./run/server")
+            mods { "${project.name}" { source sourceSets.main } }
+        }
+    }
 }
 
 apply plugin: 'eclipse'
@@ -44,10 +69,10 @@ def release = System.getenv("RELEASE") != null &&
 
 // Configure all projects
 allprojects {
-    apply plugin: 'net.minecraftforge.gradle.forge'
+    // apply plugin: 'net.minecraftforge.gradle.forge'
     apply plugin: 'net.intellisun.moddependencies'
     apply plugin: 'org.junit.platform.gradle.plugin'
-    apply plugin: 'net.ltgt.apt-eclipse'
+    apply plugin: 'com.diffplug.eclipse.apt'
 
     // Import mod dependencies and execute
     if (file('dependencies.gradle').exists())
@@ -56,20 +81,6 @@ allprojects {
     group = 'com.enderio'
     version = getVersionString(project)
     archivesBaseName = getArchiveBaseName(project)
-
-    // Configure minecraft pipline
-    minecraft {
-        version = "${minecraft_version}-${forge_version}"
-        mappings = mcp_mappings
-        runDir = "run"
-
-        // Replace the version string in source
-        replace '@VERSION@', project.version
-
-        // If the module defines `dependencyString` use it
-        if (project.hasProperty('dependencyString'))
-            replace 'DEFAULT_DEPENDENCIES;', "\"${dependencyString}\";"
-    }
 
     // The is very temporary, currently not all modules compile
     // This will exclude all non compiling modules from CI but
@@ -92,10 +103,10 @@ allprojects {
 
     project.ext.include_in_combjar = project.ext.include_in_combjar && project.ext.include_in_build
 
-    // Eclipse needs this for some reason
-    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+    java.toolchain.languageVersion = JavaLanguageVersion.of(8)
     compileJava {
-        sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = "8"
+        targetCompatibility = "8"
     }
 
     repositories {
@@ -110,10 +121,10 @@ allprojects {
         maven { url = "https://maven.mcmoddev.com" } // ???, dead as of 2021-01-10, back as of 2021-05-24
         //maven { url = "https://mmdmaven.blamejared.com" } // temp replacement for ^
         maven { url = "https://maven.blamejared.com" } // temp replacement for ^
-        maven { url = "http://mod-buildcraft.com/maven/" }
-        maven { url = "https://maven.latmod.com" } // FTBLib
-        maven { url = "http://maven.covers1624.net/" } // CoFHCore
-        //maven { url = "http://cc.crzd.me/maven/" } // ComputerCraft, dead as of 2021-05-24
+        maven { url = "https://mod-buildcraft.com/maven/" }
+        //maven { url = "https://maven.latmod.com" } // FTBLib
+        maven { url = "https://maven.covers1624.net/" } // CoFHCore
+        //maven { url = "https://cc.crzd.me/maven/" } // ComputerCraft, dead as of 2021-05-24
         maven { url = "https://www.cursemaven.com" } // Mekanism
         //maven { url = "https://repo.raoulvdberge.com/" } // Refined Storage (new)
         //maven { url = "https://repo.refinedmods.com/" } // Refined Storage (double-plus new)
@@ -138,45 +149,50 @@ allprojects {
     dependencies {
         // Remote / local endercore
         if (!localEnderCore || gradle.startParameter.taskNames.contains("runClient")) {
-            deobfCompile "com.enderio.core:EnderCore:${endercore_version}"
+            implementation "com.enderio.core:EnderCore:${endercore_version}:deobf"
         }
 
         // All jars in the '<module>/lib' directory
-        compile fileTree(dir: "lib", include: '*.jar')
+        implementation fileTree(dir: "lib", include: '*.jar')
 
         // All jars in the '<root>/lib' directory
-        compile fileTree(dir: "${project.rootDir}/lib", include: '*.jar')
+        implementation fileTree(dir: "${project.rootDir}/lib", include: '*.jar')
 
         testImplementation     "org.junit.jupiter:junit-jupiter-api:5.2.0"
-        testCompile("org.junit.jupiter:junit-jupiter-api:5.2.0")
-        testCompile("org.junit.platform:junit-platform-launcher:1.1.0")
-        testRuntime("org.junit.jupiter:junit-jupiter-engine:5.2.0")
+        testImplementation("org.junit.jupiter:junit-jupiter-api:5.2.0")
+        testImplementation("org.junit.platform:junit-platform-launcher:1.1.0")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.2.0")
 
         if (project.name != 'ap') {
             annotationProcessor project(':ap')
-            compile project(':ap')
+            implementation project(':ap')
         }
     }
 
     // Process resources to inject dynamic metadata
     processResources {
-        // Rerun this step every time these change
         inputs.property "version", project.version
-        inputs.property "mcversion", project.minecraft.version
+
+        filesMatching("mcmod.info") {
+            expand "version": project.version
+        }
+
+        // Rerun this step every time these change
+        //inputs.property "mcversion", project.minecraft.version
 
         // Inject version and mcversion to mod info
-        from(sourceSets.main.resources.srcDirs) {
-            include '**/*.info'
-            include '**/*.properties'
+        //from(sourceSets.main.resources.srcDirs) {
+        //    include '**/*.info'
+        //    include '**/*.properties'
 
-            expand 'version': project.version, 'mcversion': project.minecraft.version
-        }
+        //    expand 'version': project.version//, 'mcversion': project.minecraft.version
+        //}
 
         // Include everything else as is
-        from(sourceSets.main.resources.srcDirs) {
-            exclude '**/*.info'
-            exclude '**/*.properties'
-        }
+        //from(sourceSets.main.resources.srcDirs) {
+        //    exclude '**/*.info'
+        //    exclude '**/*.properties'
+        //}
     }
 
     // Java 8 throws errors about jdoc, ignore them
@@ -205,18 +221,27 @@ allprojects {
 			com.vladsch.flexmark.pdf.converter.PdfConverterExtension.exportToPdf(outputFile.path,
 				"<html><head></head><body><div style='white-space:pre-wrap; font-family:monospace;'>" +
 				groovy.xml.XmlUtil.escapeXml(inputFile.text) + 
-				"</div></body></html>", "", new com.vladsch.flexmark.util.options.MutableDataSet())
+				"</div></body></html>", "", new com.vladsch.flexmark.util.data.MutableDataSet())
 		}
 	}
 
     // Sign the jar with the new key store
-    task signJar(type: SignJar, dependsOn: reobfJar) {
-        inputFile = jar.archivePath
-        outputFile = jar.archivePath
-        keyStore = 'eiostore.jks'
-        alias = 'signFiles'
-        storePass = '123456'
-        keyPass = '123456'
+    task signJar(dependsOn: jar) {
+        doLast {
+            def signdir = new File("$buildDir/jars/signed")
+            signdir.mkdirs()
+
+            ant.signjar(
+                    destDir: "${signdir.absolutePath}",
+                    jar: 'build/libs/*.jar',
+                    alias: 'signFiles',
+                    storetype: "jks",
+                    keystore: 'eiostore.jks',
+                    storepass: '123456',
+                    verbose: true,
+                    preservelastmodified: "true"
+            )
+        }
     }
 
     // Cleanup the keystore
@@ -424,7 +449,7 @@ jar {
     }
 }
 
-sourceJar {
+task sourceJar(type: Jar) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     combjarprojects.each { subproject ->
         from subproject.sourceSets.main.java

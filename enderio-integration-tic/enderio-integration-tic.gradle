@@ -1,12 +1,12 @@
 repositories {
   maven {
     name 'DVS1 Maven FS'
-    url 'http://dvs1.progwml6.com/files/maven'
+    url 'https://dvs1.progwml6.com/files/maven/'
   }
 }
 
 dependencies {
-  compile project(":enderio-base")
-  deobfCompile "slimeknights.mantle:Mantle:${mantle_version}"
-  deobfCompile "slimeknights:TConstruct:${tic_version}"
+  implementation project(":enderio-base")
+  fg.deobf "slimeknights.mantle:Mantle:${mantle_version}"
+  fg.deobf "slimeknights:TConstruct:${tic_version}"
 }
