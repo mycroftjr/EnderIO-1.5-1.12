@@ -136,15 +136,18 @@ public class DarkSteelController {
 
   private static final float MAGIC_STEP_HEIGHT = 1.0023f;
   private static int stepHeightWarner = 0;
+  private static boolean stepHeightWarned = false;
 
   private static void updateStepHeight(EntityPlayer player) {
     if (!player.isSneaking() && StepAssistUpgrade.isEquipped(player) && StateController.isActive(player, StepAssistUpgrade.INSTANCE)) {
       if (player.stepHeight < MAGIC_STEP_HEIGHT) {
+        stepHeightWarner++;
         if (stepHeightWarner > 20) {
-          player.sendStatusMessage(Lang.GUI_STEP_ASSIST_UNAVAILABLE.toChatServer(player.stepHeight), true);
-          // stepHeightWarner = -100; // 1 second after switching on but 6 seconds between repeated warnings
-        } else {
-          stepHeightWarner++;
+          if (!stepHeightWarned) {
+            player.sendStatusMessage(Lang.GUI_STEP_ASSIST_UNAVAILABLE.toChatServer(player.stepHeight), true);
+            stepHeightWarned = true;
+          }
+          stepHeightWarner = -100; // 1 second after switching on but 6 seconds between repeated warnings
         }
         player.stepHeight = MAGIC_STEP_HEIGHT;
       } else if (stepHeightWarner > 0) {
